@@ -1,0 +1,6 @@
+Flask
+stripe
+joblib
+numpy
+pandas
+scikit-learn
