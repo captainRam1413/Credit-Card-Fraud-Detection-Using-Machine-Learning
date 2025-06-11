@@ -3,6 +3,7 @@ import stripe
 import joblib
 import numpy as np
 import pandas as pd
+import os
 app = Flask(__name__)
 #dp_1QNpwJKv4WkeqP3163iwB43C
 def format_string(text):
@@ -17,7 +18,22 @@ def format_string(text):
 
 # Configure Stripe with your API key
 stripe.api_key = "sk_test_51QKvXIKv4WkeqP31vUXoXcYlAhYFemNfiGkLFfJAnaN7EsJu9B4Qt2KzB7GHDVADDugGSRRJIVhZnGWP8fwcUF2H00O8T0QzCO"
-encoder = joblib.load('dynamic_encoders.pkl')  # Replace with the actual file path
+
+# Construct the absolute path to the .pkl file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+encoder_path = os.path.join(current_dir, 'dynamic_encoders.pkl')
+
+try:
+    encoder = joblib.load(encoder_path)
+except FileNotFoundError:
+    print(f"Error: The file 'dynamic_encoders.pkl' was not found at {encoder_path}")
+    # Handle the error appropriately, e.g., exit or raise
+    raise
+except Exception as e:
+    print(f"Error loading 'dynamic_encoders.pkl': {e}")
+    # Handle other unpickling errors
+    raise
+
 model = joblib.load('cc_tuned.pkl')
 @app.route('/')
 def home():
