@@ -19,35 +19,22 @@ def format_string(text):
 # Configure Stripe with your API key
 stripe.api_key = "sk_test_51QKvXIKv4WkeqP31vUXoXcYlAhYFemNfiGkLFfJAnaN7EsJu9B4Qt2KzB7GHDVADDugGSRRJIVhZnGWP8fwcUF2H00O8T0QzCO"
 
-# Construct the absolute path to the .pkl files
+# Construct the absolute path to the .pkl file
 current_dir = os.path.dirname(os.path.abspath(__file__))
 encoder_path = os.path.join(current_dir, 'dynamic_encoders.pkl')
-model_path = os.path.join(current_dir, 'cc_tuned.pkl')
 
-# Global variables for model and encoder
-encoder = None
-model = None
+try:
+    encoder = joblib.load(encoder_path)
+except FileNotFoundError:
+    print(f"Error: The file 'dynamic_encoders.pkl' was not found at {encoder_path}")
+    # Handle the error appropriately, e.g., exit or raise
+    raise
+except Exception as e:
+    print(f"Error loading 'dynamic_encoders.pkl': {e}")
+    # Handle other unpickling errors
+    raise
 
-def load_models():
-    global encoder, model
-    try:
-        encoder = joblib.load(encoder_path)
-        print("Encoder loaded successfully")
-    except Exception as e:
-        print(f"Error loading 'dynamic_encoders.pkl': {e}")
-        # You could return a default encoder or handle this gracefully
-        encoder = None
-    
-    try:
-        model = joblib.load(model_path)
-        print("Model loaded successfully")
-    except Exception as e:
-        print(f"Error loading 'cc_tuned.pkl': {e}")
-        model = None
-
-# Load models when the app starts
-load_models()
-
+model = joblib.load('cc_tuned.pkl')
 @app.route('/')
 def home():
     # Read countries from countries.txt and convert it to a list
