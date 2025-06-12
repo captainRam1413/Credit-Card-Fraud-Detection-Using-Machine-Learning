@@ -21,7 +21,7 @@ stripe.api_key = "sk_test_51QKvXIKv4WkeqP31vUXoXcYlAhYFemNfiGkLFfJAnaN7EsJu9B4Qt
 
 # Construct the absolute path to the .pkl file
 current_dir = os.path.dirname(os.path.abspath(__file__))
-encoder_path = os.path.join(current_dir, 'dynamic_encoders.pkl')
+encoder_path = os.path.join(current_dir, 'dynamic_encoders_py312.pkl')
 
 try:
     encoder = joblib.load(encoder_path)
