@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, render_template
 import stripe
 import joblib
 import numpy as np
@@ -24,14 +24,14 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 encoder_path = os.path.join(current_dir, 'dynamic_encoders_py312.pkl')
 
 try:
-    encoder = joblib.load(encoder_path)
+    encoder = joblib.load('dynamic_encoders_py312.pkl', mmap_mode=None)
     joblib.dump(encoder, "dynamic_encoders_py312.pkl", protocol=4)
 except FileNotFoundError:
-    print(f"Error: The file 'dynamic_encoders.pkl' was not found at {encoder_path}")
+    print(f"Error: The file 'dynamic_encoders312.pkl' was not found at {encoder_path}")
     # Handle the error appropriately, e.g., exit or raise
     raise
 except Exception as e:
-    print(f"Error loading 'dynamic_encoders.pkl': {e}")
+    print(f"Error loading 'dynamic_encoders312.pkl': {e}")
     # Handle other unpickling errors
     raise
 
