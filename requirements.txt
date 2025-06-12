@@ -1,4 +1,4 @@
-Flask==3.0.0
+Flask
 stripe==7.0.0
 joblib==1.3.2
 numpy==1.26.2
