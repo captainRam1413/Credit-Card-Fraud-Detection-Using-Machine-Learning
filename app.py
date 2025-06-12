@@ -24,7 +24,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 encoder_path = os.path.join(current_dir, 'dynamic_encoders_py312.pkl')
 
 try:
-    encoder = joblib.load('dynamic_encoders_py312.pkl', mmap_mode=None)
+    encoder = joblib.load('./dynamic_encoders_py312.pkl', mmap_mode=None)
     joblib.dump(encoder, "dynamic_encoders_py312.pkl", protocol=4)
 except FileNotFoundError:
     print(f"Error: The file 'dynamic_encoders312.pkl' was not found at {encoder_path}")
@@ -35,7 +35,9 @@ except Exception as e:
     # Handle other unpickling errors
     raise
 
-model = joblib.load('cc_tuned.pkl')
+model = joblib.load('./cc_tuned.pkl', mmap_mode=None)
+joblib.dump(model, "cc_tuned.pkl", protocol=4)
+
 @app.route('/')
 def home():
     # Read countries from countries.txt and convert it to a list
