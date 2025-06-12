@@ -25,6 +25,7 @@ encoder_path = os.path.join(current_dir, 'dynamic_encoders.pkl')
 
 try:
     encoder = joblib.load(encoder_path)
+    joblib.dump(encoder, "dynamic_encoders_py312.pkl", protocol=4)
 except FileNotFoundError:
     print(f"Error: The file 'dynamic_encoders.pkl' was not found at {encoder_path}")
     # Handle the error appropriately, e.g., exit or raise
