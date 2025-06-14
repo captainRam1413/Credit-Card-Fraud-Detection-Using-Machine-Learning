@@ -1,55 +1,63 @@
-from flask import Flask, request, render_template
-import stripe
-import joblib
-import numpy as np
-import pandas as pd
 import os
+import pickle
+from flask import Flask, request, render_template
+import joblib
+import stripe
+
 app = Flask(__name__)
-#dp_1QNpwJKv4WkeqP3163iwB43C
+
 def format_string(text):
     words = text.split()
     if len(words) <= 2:
-        # Capitalize the first letter of the entire text
         return text.capitalize()
     else:
-        # Capitalize the first letter of each word
         return ' '.join(word.capitalize() for word in words)
 
+# Use environment variable for stripe key in production
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', "sk_test_51QKvXIKv4WkeqP31vUXoXcYlAhYFemNfiGkLFfJAnaN7EsJu9B4Qt2KzB7GHDVADDugGSRRJIVhZnGWP8fwcUF2H00O8T0QzCO")
 
-# Configure Stripe with your API key
-stripe.api_key = "sk_test_51QKvXIKv4WkeqP31vUXoXcYlAhYFemNfiGkLFfJAnaN7EsJu9B4Qt2KzB7GHDVADDugGSRRJIVhZnGWP8fwcUF2H00O8T0QzCO"
-
-# Construct the absolute path to the .pkl file
 current_dir = os.path.dirname(os.path.abspath(__file__))
-encoder_path = os.path.join(current_dir, 'dynamic_encoders_py312.pkl')
 
-try:
-    encoder = joblib.load('./dynamic_encoders_py312.pkl', mmap_mode=None)
-    joblib.dump(encoder, "dynamic_encoders_py312.pkl", protocol=4)
-except FileNotFoundError:
-    print(f"Error: The file 'dynamic_encoders312.pkl' was not found at {encoder_path}")
-    # Handle the error appropriately, e.g., exit or raise
-    raise
-except Exception as e:
-    print(f"Error loading 'dynamic_encoders312.pkl': {e}")
-    # Handle other unpickling errors
-    raise
+def load_models():
+    global encoder, model
+    
+    for loader_name, loader_func in [('joblib', joblib.load), ('pickle', pickle.load)]:
+        try:
+            if loader_name == 'joblib':
+                encoder = loader_func(os.path.join(current_dir, 'dynamic_encoders.pkl'))
+                model = loader_func(os.path.join(current_dir, 'cc_tuned.pkl'))
+            else:
+                with open(os.path.join(current_dir, 'dynamic_encoders.pkl'), 'rb') as f:
+                    encoder = loader_func(f)
+                with open(os.path.join(current_dir, 'cc_tuned.pkl'), 'rb') as f:
+                    model = loader_func(f)
+            
+            print(f"Models loaded successfully using {loader_name}")
+            return True
+            
+        except Exception as e:
+            print(f"Failed to load with {loader_name}: {e}")
+            continue
+    
+    return False
 
-model = joblib.load('./cc_tuned01.pkl', mmap_mode=None)
-joblib.dump(model, "cc_tuned01.pkl", protocol=4)
+encoder = None
+model = None
+load_models()
 
 @app.route('/')
 def home():
-    # Read countries from countries.txt and convert it to a list
     countries = []
-    with open('all.txt', 'r') as file:
-        for line in file.readlines():
-            # Split the line by comma and strip whitespace characters
-           #
-            country_name, country_code = line.strip().split(',')
-            countries.append((country_name, country_code))
-
-    return render_template('payment_form.html',countries=countries)
+    try:
+        with open(os.path.join(current_dir, 'all.txt'), 'r') as file:
+            for line in file.readlines():
+                if ',' in line:
+                    country_name, country_code = line.strip().split(',', 1)
+                    countries.append((country_name, country_code))
+    except FileNotFoundError:
+        countries = [("United States", "US"), ("Canada", "CA")]
+    
+    return render_template('payment_form.html', countries=countries)
 
 @app.route('/process_payment', methods=['POST'])
 def process_payment():
@@ -210,6 +218,3 @@ def process_payment():
         print(e)
         print(e.user_message)
         return render_template('payment_form.html', payment_status=f"Payment declined: {e.user_message}",fraud='Yes',reciept="/payment_form.html")
-
-if __name__ == "__main__":
-    app.run(debug=True)
