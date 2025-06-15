@@ -11,53 +11,113 @@
     <script src="https://js.stripe.com/v3/"></script>
     <style>
         body {
-            background-color: #f8f9fa;
-            height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            width: 100%;
+            padding: 0 10px;
         }
         .main-container {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            align-items: center;
-            gap: 20px;
+            align-items: flex-start;
+            gap: 24px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px;
+            margin: 40px auto;
         }
         .status-panel {
-            width: 25%;
-            height: fit-content;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            flex: 1 1 260px;
+            min-width: 240px;
+            max-width: 320px;
+            padding: 1.5rem 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
             background-color: #fff;
             text-align: center;
+            margin-bottom: 24px;
         }
         .form-container {
-            width: 50%;
-            padding: 2rem;
+            flex: 2 1 400px;
+            min-width: 320px;
+            max-width: 540px;
+            padding: 2.5rem 2rem;
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+            margin-bottom: 24px;
         }
-
         .form-title {
             text-align: center;
-            margin-bottom: 1.5rem;
-            color: #343a40;
+            margin-bottom: 2rem;
+            color: #2d3748;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
-
         #card-element {
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            background-color: #f8f9fa;
+            padding: 12px;
+            border: 1.5px solid #b6c2d1;
+            border-radius: 6px;
+            background-color: #f1f5f9;
+            transition: border-color 0.2s;
         }
-
-        .status-container {
-            display: flex;
+        #card-element:focus-within {
+            border-color: #6366f1;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #6366f1 0%, #2563eb 100%);
+            border: none;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
+        }
+        label.form-label {
+            font-weight: 500;
+            color: #374151;
+        }
+        .status-panel h4 {
+            color: #6366f1;
+            font-weight: 600;
+        }
+        .status-panel p, .status-panel h6 {
+            margin-bottom: 0.5rem;
+        }
+        .status-panel a {
+            color: #2563eb;
+            text-decoration: underline;
+            font-size: 1rem;
+        }
+        @media (max-width: 991px) {
+            .main-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0;
+            }
+            .form-container, .status-panel {
+                margin: 0 auto 24px auto;
+                max-width: 100%;
+            }
+        }
+        @media (max-width: 575px) {
+            .form-container {
+                padding: 1.2rem 0.5rem;
+            }
+            .status-panel {
+                padding: 1rem 0.5rem;
+            }
+            .form-title {
+                font-size: 1.3rem;
+            }
         }
     </style>
 </head>
@@ -69,17 +129,14 @@
             {% if payment_status is defined %}
                 <div class="status-panel" id="payment-status">
                     <h4>Payment Status</h4>
-                    <p class="text-success">{{payment_status}}</p>
+                    <p class="text-success fw-bold">{{payment_status}}</p>
                     <a href='{{reciept}}'><h6>Payment Receipt</h6></a>
                 </div>
-            {% else %}
-                
             {% endif %}
-        
 
-            <div class="form-container">
+            <div class="form-container shadow">
                 <h2 class="form-title">Secure Payment Form</h2>
-                <form id="payment-form" action="/process_payment" method="POST">
+                <form id="payment-form" action="/process_payment" method="POST" autocomplete="off">
                     <div class="mb-3">
                         <label for="full_name" class="form-label">Full Name</label>
                         <input type="text" id="full_name" name="full_name" class="form-control"
@@ -141,8 +198,8 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col">
-                            <label for="price" class="form-label">Currency</label>
-                            <select name="Currency" id="Currency" class="form-control">
+                            <label for="Currency" class="form-label">Currency</label>
+                            <select name="Currency" id="Currency" class="form-select">
                                 <option value="USD" selected>USD</option>
                                 <option value="EUR">EUR</option>
                             </select>
@@ -150,11 +207,11 @@
                         <div class="col">
                             <label for="price" class="form-label">Amount</label>
                             <input type="number" id="price" name="price" class="form-control" placeholder="00000"
-                                required>
+                                required min="1" step="any">
                         </div>
                     </div>
                     <input type="hidden" name="stripeToken" id="stripeToken">
-                    <button type="submit" class="btn btn-primary w-100">Submit Payment</button>
+                    <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Submit Payment</button>
                 </form>
             </div>
 
@@ -162,12 +219,9 @@
             {% if fraud is defined %}
             <div class="status-panel" id="fraud-status">
                 <h4>Fraud Detection</h4>
-                <p class="text-info">Fraudulent:{{fraud}}</p>
+                <p class="text-info fw-bold">Fraudulent: {{fraud}}</p>
             </div>
-            {% else %}
             {% endif %}
-        
-          
         </div>
     </div>
     <!-- Bootstrap JS -->
@@ -177,7 +231,7 @@
             var fullName = document.getElementById("full_name").value.trim();
             var nameParts = fullName.split(' ');
             var firstName = nameParts[0];
-            var lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+            var lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
             document.getElementById("first_name").value = firstName;
             document.getElementById("last_name").value = lastName;
         }

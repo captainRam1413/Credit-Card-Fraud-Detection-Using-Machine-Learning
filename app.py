@@ -1,9 +1,14 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import stripe
 import joblib
 import numpy as np
 import pandas as pd
+import threading
+import time
+import requests
 import os
+from datetime import datetime
+
 app = Flask(__name__)
 #dp_1QNpwJKv4WkeqP3163iwB43C
 def format_string(text):
@@ -210,6 +215,31 @@ def process_payment():
         print(e)
         print(e.user_message)
         return render_template('payment_form.html', payment_status=f"Payment declined: {e.user_message}",fraud='Yes',reciept="/payment_form.html")
+
+@app.route('/self-ping')
+def self_ping():
+    """A route that can be pinged (and logs the ping)."""
+    print("Self-ping route was called")
+    return "Self-pinged!", 200
+
+def ping_self_periodically():
+    url = os.environ.get('RENDER_EXTERNAL_URL', 'http://localhost:5000') + '/self-ping'
+    while True:
+        time.sleep(240)  # 4 minutes = 240 seconds
+        try:
+            requests.get(url)
+            print(f"Pinged {url}")
+        except Exception as e:
+            print(f"Failed to ping self: {e}")
+
+# Start the background thread when the app starts
+def start_self_pinger():
+    if os.environ.get('RENDER_EXTERNAL_URL'):
+        thread = threading.Thread(target=ping_self_periodically, daemon=True)
+        thread.start()
+
+start_self_pinger()
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
