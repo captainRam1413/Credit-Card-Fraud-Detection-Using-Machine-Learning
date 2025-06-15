@@ -212,4 +212,4 @@ def process_payment():
         return render_template('payment_form.html', payment_status=f"Payment declined: {e.user_message}",fraud='Yes',reciept="/payment_form.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
